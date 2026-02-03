@@ -9,6 +9,7 @@ init()
 screen = display.set_mode((WIDTH, HEIGHT))
 clock = time.Clock()
 display.set_caption("Пінг-Понг")
+
 # ---СЕРВЕР ---
 def connect_to_server():
     while True:
@@ -40,7 +41,16 @@ def receive():
 # --- ШРИФТИ ---
 font_win = font.Font(None, 72)
 font_main = font.Font(None, 36)
+
 # --- ЗОБРАЖЕННЯ ----
+background_img = image.load("images.jpg").convert()
+background_img = transform.scale(background_img, (800, 600))
+
+paddle_img = image.load("pixil-frame-0.png").convert_alpha()
+paddle_img = transform.scale(paddle_img, (20, 100))
+
+ball_img = image.load("images (1).jpg").convert_alpha()
+ball_img = transform.scale(ball_img, (20, 20))
 
 # --- ЗВУКИ ---
 
@@ -56,16 +66,16 @@ while True:
             exit()
 
     if "countdown" in game_state and game_state["countdown"] > 0:
-        screen.fill((0, 0, 0))
+        screen.blit(background_img, (0, 0))
         countdown_text = font.Font(None, 72).render(str(game_state["countdown"]), True, (255, 255, 255))
         screen.blit(countdown_text, (WIDTH // 2 - 20, HEIGHT // 2 - 30))
         display.update()
-        continue  # Не малюємо гру до завершення відліку
+        continue
 
     if "winner" in game_state and game_state["winner"] is not None:
-        screen.fill((20, 20, 20))
+        screen.blit(background_img, (0, 0))
 
-        if you_winner is None:  # Встановлюємо тільки один раз
+        if you_winner is None:
             if game_state["winner"] == my_id:
                 you_winner = True
             else:
@@ -85,22 +95,20 @@ while True:
         screen.blit(text, text_rect)
 
         display.update()
-        continue  # Блокує гру після перемоги
+        continue
 
     if game_state:
-        screen.fill((30, 30, 30))
-        draw.rect(screen, (0, 255, 0), (20, game_state['paddles']['0'], 20, 100))
-        draw.rect(screen, (255, 0, 255), (WIDTH - 40, game_state['paddles']['1'], 20, 100))
-        draw.circle(screen, (255, 255, 255), (game_state['ball']['x'], game_state['ball']['y']), 10)
+        screen.blit(background_img, (0, 0))
+        screen.blit(paddle_img, (20, game_state['paddles']['0']))
+        screen.blit(paddle_img, (WIDTH - 40, game_state['paddles']['1']))
+        screen.blit(ball_img, (game_state['ball']['x'] - 10, game_state['ball']['y'] - 10))
         score_text = font_main.render(f"{game_state['scores'][0]} : {game_state['scores'][1]}", True, (255, 255, 255))
         screen.blit(score_text, (WIDTH // 2 -25, 20))
 
         if game_state['sound_event']:
             if game_state['sound_event'] == 'wall_hit':
-                # звук відбиття м'ячика від стін
                 pass
             if game_state['sound_event'] == 'platform_hit':
-                # звук відбиття м'ячика від платформи
                 pass
 
     else:
